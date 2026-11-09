@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Posture Analysis - Test Page</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at 20% 20%, #7c8aff, #4f46e5 35%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 32px;
+            color: #0f172a;
+        }
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.18);
+            backdrop-filter: blur(6px);
+        }
+        .header {
+            margin-bottom: 16px;
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #111827;
+            letter-spacing: -0.5px;
+        }
+        .subtitle {
+            color: #4b5563;
+            margin-top: 6px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .upload-area {
+            border: 2px dashed #c7d2fe;
+            background: #f8f9ff;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .upload-area:hover { border-color: #7c8aff; box-shadow: inset 0 0 0 1px #7c8aff; }
+        .upload-area.dragover { background: #eef2ff; border-color: #4f46e5; }
+        #fileInput { display: none; }
+        .upload-icon { font-size: 46px; margin-bottom: 10px; }
+        .upload-text { color: #1f2937; font-size: 18px; font-weight: 700; }
+        .upload-hint { color: #6b7280; font-size: 14px; margin-top: 6px; }
+        .preview-area { margin: 16px 0; text-align: center; }
+        .preview-image {
+            max-width: 100%;
+            max-height: 360px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+            display: none;
+        }
+        .exercise-select { margin: 16px 0; }
+        .exercise-select label { color: #111827; font-weight: 700; margin-bottom: 8px; display: block; }
+        .exercise-select select {
+            width: 100%;
+            padding: 12px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            background: #fff;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+            margin-top: 12px;
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 10px 25px rgba(79,70,229,0.35); }
+        .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+        .status {
+            margin-top: 16px;
+            padding: 14px;
+            border-radius: 12px;
+            display: none;
+            font-weight: 600;
+        }
+        .status.loading { display: block; background: #eef2ff; color: #4338ca; text-align: center; }
+        .status.success { display: block; background: #ecfdf3; color: #166534; }
+        .status.error { display: block; background: #fef2f2; color: #b91c1c; }
+        .result { margin-top: 16px; display: none; }
+        .result.show { display: block; }
+        .result-card {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 10px;
+            border: 1px solid #e5e7eb;
+        }
+        .result-label { font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+        .result-value { color: #475569; }
+        .correct { color: #15803d; font-weight: 800; }
+        .incorrect { color: #b91c1c; font-weight: 800; }
+        .feedback-list { list-style: none; padding-left: 0; }
+        .feedback-list li {
+            padding: 10px 12px;
+            margin: 6px 0;
+            background: #fff;
+            border-left: 4px solid #4f46e5;
+            border-radius: 8px;
+            color: #111827;
+        }
+        .tips {
+            display: grid;
+            gap: 12px;
+        }
+        .tip {
+            background: rgba(255,255,255,0.92);
+            border-radius: 12px;
+            padding: 12px 14px;
+            border: 1px solid #e5e7eb;
+        }
+        .tip-title { font-weight: 700; color: #111827; margin-bottom: 4px; }
+        .tip-text { color: #4b5563; font-size: 14px; }
+        .server-status {
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 14px;
+            text-align: center;
+            font-weight: 700;
+        }
+        .server-status.online { background: #ecfdf3; color: #15803d; }
+        .server-status.offline { background: #fef2f2; color: #b91c1c; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="card">
+            <div class="header">
+                <div class="badge">Posture AI</div>
+                <h1>Exercise Posture Analysis</h1>
+                <p class="subtitle">Upload a photo to get instant feedback on your form.</p>
+            </div>
+
+            <div id="serverStatus" class="server-status">
+                <span id="statusText">Checking server status...</span>
+            </div>
+            
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📸</div>
+                <div class="upload-text">Click to upload or drag and drop</div>
+                <div class="upload-hint">Supports JPG, PNG, and other image formats</div>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+            
+            <div class="preview-area">
+                <img id="previewImage" class="preview-image" alt="Preview">
+            </div>
+            
+            <div class="exercise-select">
+                <label for="exerciseType">Exercise Type (optional – auto-detect if not selected)</label>
+                <select id="exerciseType">
+                    <option value="">Auto-detect</option>
+                    <option value="squat">Squat</option>
+                    <option value="pushup">Push-up</option>
+                    <option value="plank">Plank</option>
+                    <option value="lunge">Lunge</option>
+                    <option value="deadlift">Deadlift</option>
+                </select>
+            </div>
+            
+            <button class="btn" id="analyzeBtn" disabled>Analyze Posture</button>
+            
+            <div class="status" id="status"></div>
+            
+            <div class="result" id="result"></div>
+        </div>
+
+        <div class="card">
+            <div class="header">
+                <div class="badge" style="background:linear-gradient(135deg,#10b981,#059669);">Best Results</div>
+                <h1 style="font-size:22px;">Capture tips</h1>
+                <p class="subtitle" style="margin-bottom:12px;">Small tweaks to improve detection accuracy.</p>
+            </div>
+            <div class="tips">
+                <div class="tip">
+                    <div class="tip-title">Full body in frame</div>
+                    <div class="tip-text">Make sure head, shoulders, hips, knees, and ankles are visible.</div>
+                </div>
+                <div class="tip">
+                    <div class="tip-title">Good lighting</div>
+                    <div class="tip-text">Avoid heavy shadows. Face the light source if possible.</div>
+                </div>
+                <div class="tip">
+                    <div class="tip-title">Camera angle</div>
+                    <div class="tip-text">Side view works best for squats, push-ups, planks, and deadlifts.</div>
+                </div>
+                <div class="tip">
+                    <div class="tip-title">Single person</div>
+                    <div class="tip-text">Only the person performing the exercise should be in the frame.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewImage = document.getElementById('previewImage');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const status = document.getElementById('status');
+        const result = document.getElementById('result');
+        const exerciseType = document.getElementById('exerciseType');
+        const serverStatus = document.getElementById('serverStatus');
+        const statusText = document.getElementById('statusText');
+        
+        let selectedFile = null;
+        
+        // Check server status on load
+        checkServerStatus();
+        
+        // Upload area click
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
+        });
+        
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFile(e.dataTransfer.files[0]);
+        });
+        
+        function handleFile(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+            
+            selectedFile = file;
+            
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                analyzeBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Analyze button
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            
+            analyzeBtn.disabled = true;
+            status.className = 'status loading';
+            status.textContent = 'Analyzing posture... Please wait.';
+            result.classList.remove('show');
+            
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            if (exerciseType.value) {
+                formData.append('exercise_type', exerciseType.value);
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/analyze`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    throw new Error(`Server returned invalid response (Status: ${response.status}). Make sure the server is running correctly.`);
+                }
+                
+                if (!response.ok) {
+                    // Handle HTTP errors
+                    status.className = 'status error';
+                    status.textContent = data.detail || data.error || `Server error (Status: ${response.status})`;
+                    result.classList.remove('show');
+                    return;
+                }
+                
+                if (data.success) {
+                    displayResult(data);
+                } else {
+                    status.className = 'status error';
+                    status.textContent = data.error || 'Analysis failed';
+                    result.classList.remove('show');
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `Error: ${error.message}. Make sure the server is running on ${API_URL}`;
+                result.classList.remove('show');
+                console.error('Analysis error:', error);
+            } finally {
+                analyzeBtn.disabled = false;
+            }
+        });
+        
+        function displayResult(data) {
+            status.className = 'status success';
+            status.textContent = 'Analysis complete!';
+            
+            const isCorrect = data.posture_correct;
+            const exerciseTypeName = data.exercise_type || 'Unknown';
+            
+            let html = `
+                <div class="result-item">
+                    <div class="result-label">Exercise Type:</div>
+                    <div class="result-value">${exerciseTypeName.charAt(0).toUpperCase() + exerciseTypeName.slice(1)}</div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Posture Status:</div>
+                    <div class="result-value ${isCorrect ? 'correct' : 'incorrect'}">
+                        ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                    </div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Confidence:</div>
+                    <div class="result-value">${(data.confidence * 100).toFixed(1)}%</div>
+                </div>
+            `;
+            
+            if (data.angles && Object.keys(data.angles).length > 0) {
+                html += '<div class="result-item"><div class="result-label">Detected Angles:</div>';
+                for (const [key, value] of Object.entries(data.angles)) {
+                    html += `<div class="result-value">${key}: ${value.toFixed(1)}°</div>`;
+                }
+                html += '</div>';
+            }
+            
+            if (data.feedback && data.feedback.length > 0) {
+                html += '<div class="result-item"><div class="result-label">Feedback:</div><ul class="feedback-list">';
+                data.feedback.forEach(fb => {
+                    html += `<li>${fb}</li>`;
+                });
+                html += '</ul></div>';
+            }
+            
+            if (data.issues && data.issues.length > 0) {
+                html += '<div class="result-item"><div class="result-label">Issues Detected:</div><ul class="feedback-list">';
+                data.issues.forEach(issue => {
+                    html += `<li style="border-left-color: #c62828;">${issue}</li>`;
+                });
+                html += '</ul></div>';
+            }
+            
+            if (data.recommendations && data.recommendations.length > 0) {
+                html += '<div class="result-item"><div class="result-label">Recommendations:</div><ul class="feedback-list">';
+                data.recommendations.forEach(rec => {
+                    html += `<li style="border-left-color: #2e7d32;">${rec}</li>`;
+                });
+                html += '</ul></div>';
+            }
+            
+            result.innerHTML = html;
+            result.classList.add('show');
+        }
+        
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                if (response.ok) {
+                    serverStatus.className = 'server-status online';
+                    statusText.textContent = '✓ Server is online and ready';
+                } else {
+                    throw new Error('Server not responding');
+                }
+            } catch (error) {
+                serverStatus.className = 'server-status offline';
+                statusText.textContent = '✗ Server is offline - Please start the server with: python main.py';
+            }
+        }
+    </script>
+</body>
+</html>
+
